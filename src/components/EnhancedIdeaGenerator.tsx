@@ -50,8 +50,11 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
     - Complexité: ${complexity || 'Moyenne'}
     - Tonalité souhaitée: ${tone === 'professional' ? 'Sérieux et professionnel' : 'Créatif et ludique'}
     - Préférences: ${preferences || 'Aucune'}
+
+    Réponds EXCLUSIVEMENT avec un objet JSON valide. Ne fournis aucun texte avant ou après le JSON.
+    Le JSON doit être parfaitement formaté. Fais particulièrement attention aux tableaux de chaînes de caractères : chaque chaîne DOIT être entourée de doubles guillemets.
     
-    Réponds au format JSON strict, sans texte d'introduction ni conclusion, uniquement l'objet JSON:
+    Voici le format exact à respecter:
     {
       "title": "Titre accrocheur",
       "description": "Description détaillée (100-150 mots)",

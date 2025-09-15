@@ -35,7 +35,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
     Analyse cette idée de projet et fournis des insights.
     Idée: "${idea.title}: ${idea.description}"
     Catégorie: "${idea.category}"
-    Réponds au format JSON strict, sans texte d'introduction ni conclusion, uniquement l'objet JSON:
+
+    Réponds EXCLUSIVEMENT avec un objet JSON valide. Ne fournis aucun texte avant ou après le JSON.
+    Le JSON doit être parfaitement formaté. Chaque chaîne de caractères dans un tableau DOIT être entre doubles guillemets.
+    
+    Format attendu:
     {
       "marketAnalysis": "Analyse du marché (50 mots)",
       "competitors": ["Concurrent 1", "Concurrent 2", "Concurrent 3"],
@@ -49,7 +53,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
     const personasPrompt = `
     Crée 3 personas utilisateurs détaillés pour ce projet.
     "${idea.title}: ${idea.description}"
-    Réponds au format JSON strict, sans texte d'introduction ni conclusion, uniquement l'objet JSON:
+
+    Réponds EXCLUSIVEMENT avec un objet JSON valide. Ne fournis aucun texte avant ou après le JSON.
+    Le JSON doit être parfaitement formaté. Chaque chaîne de caractères dans un tableau DOIT être entre doubles guillemets.
+
+    Format attendu:
     {
       "personas": [
         {
