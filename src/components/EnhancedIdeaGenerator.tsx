@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shuffle, ArrowRight, Star, Clock, TrendingUp, Brain, Sparkles, AlertCircle } from 'lucide-react';
+import { Shuffle, ArrowRight, Star, Clock, TrendingUp, Brain, Sparkles, AlertCircle, Info, Wand2 } from 'lucide-react';
 import { ProjectIdea, ApiConfig } from '../types';
 import { ideaTemplates } from '../data/ideaTemplates';
 import { aiService } from '../services/aiService';
@@ -21,7 +21,21 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
   const [preferences, setPreferences] = useState('');
   const [targetAudience, setTargetAudience] = useState('');
   const [complexity, setComplexity] = useState('Moyen');
+  const [tone, setTone] = useState<'professional' | 'creative'>('professional');
   const [apiError, setApiError] = useState<string | null>(null);
+
+  const targetAudienceTags = ['Étudiants', 'Entrepreneurs', 'Artistes', 'Développeurs', 'Familles'];
+  const preferencesTags = ['Mobile-first', 'Gamification', 'Accessible', 'Minimaliste', 'Écologique'];
+
+  const handleSurpriseTarget = () => {
+    const targets = ['Jeunes professionnels', 'Créateurs de contenu', 'Amateurs de sport', 'Seniors actifs', 'Propriétaires d\'animaux'];
+    setTargetAudience(faker.helpers.arrayElement(targets));
+  };
+
+  const handleSurprisePreferences = () => {
+    const prefs = ['Focus sur la collaboration', 'Expérience utilisateur très visuelle', 'Intégration de l\'IA', 'Sécurité renforcée', 'Modèle open-source'];
+    setPreferences(faker.helpers.arrayElement(prefs));
+  };
 
   const generateAIIdea = async () => {
     setIsGenerating(true);
@@ -34,6 +48,7 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
     Contraintes:
     - Public cible: ${targetAudience || 'Utilisateurs génériques'}
     - Complexité: ${complexity || 'Moyenne'}
+    - Tonalité souhaitée: ${tone === 'professional' ? 'Sérieux et professionnel' : 'Créatif et ludique'}
     - Préférences: ${preferences || 'Aucune'}
     
     Réponds au format JSON strict, sans texte d'introduction ni conclusion, uniquement l'objet JSON:
@@ -177,49 +192,113 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-4 pt-4 border-t border-gray-200"
+              className="space-y-6 pt-4 border-t border-gray-200"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Public Cible */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Public cible préféré
-                  </label>
-                  <input
-                    type="text"
-                    value={targetAudience}
-                    onChange={(e) => setTargetAudience(e.target.value)}
-                    placeholder="ex: Entrepreneurs, étudiants..."
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="targetAudience"
+                      className="block px-3.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                      placeholder=" "
+                      value={targetAudience}
+                      onChange={(e) => setTargetAudience(e.target.value)}
+                    />
+                    <label
+                      htmlFor="targetAudience"
+                      className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-purple-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-3"
+                    >
+                      Public cible préféré
+                    </label>
+                    <div className="absolute top-3 right-3 flex items-center space-x-2">
+                      <div className="relative group/tooltip">
+                        <Info className="h-5 w-5 text-gray-400 cursor-help" />
+                        <div className="absolute bottom-full mb-2 -right-1/2 translate-x-1/2 w-60 p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-opacity z-10">
+                          Définissez le groupe d'utilisateurs principal que votre projet vise.
+                        </div>
+                      </div>
+                      <button onClick={handleSurpriseTarget} className="text-gray-400 hover:text-purple-600">
+                        <Wand2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {targetAudienceTags.map(tag => (
+                      <button key={tag} onClick={() => setTargetAudience(prev => prev ? `${prev}, ${tag}` : tag)} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full hover:bg-purple-100 hover:text-purple-700 transition-colors">
+                        + {tag}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Niveau de complexité
-                  </label>
+                {/* Complexité */}
+                <div className="relative">
                   <select
+                    id="complexity"
                     value={complexity}
                     onChange={(e) => setComplexity(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="block px-3.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-purple-600"
                   >
                     <option value="Facile">Facile - MVP simple</option>
                     <option value="Moyen">Moyen - Fonctionnalités avancées</option>
                     <option value="Difficile">Difficile - Solution complexe</option>
                   </select>
+                  <label
+                      htmlFor="complexity"
+                      className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 start-3"
+                    >
+                      Niveau de complexité
+                    </label>
                 </div>
               </div>
               
+              {/* Préférences */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Préférences particulières
-                </label>
-                <textarea
-                  value={preferences}
-                  onChange={(e) => setPreferences(e.target.value)}
-                  placeholder="ex: Focus sur l'accessibilité, intégration blockchain, approche mobile-first..."
-                  rows={2}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                <div className="relative">
+                  <textarea
+                    id="preferences"
+                    value={preferences}
+                    onChange={(e) => setPreferences(e.target.value)}
+                    placeholder=" "
+                    rows={2}
+                    className="block px-3.5 pb-2.5 pt-4 w-full text-sm text-gray-900 bg-transparent rounded-lg border-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-purple-600 peer"
+                  />
+                  <label
+                    htmlFor="preferences"
+                    className="absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-purple-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-3"
+                  >
+                    Préférences particulières
+                  </label>
+                  <div className="absolute top-3 right-3 flex items-center space-x-2">
+                      <div className="relative group/tooltip">
+                        <Info className="h-5 w-5 text-gray-400 cursor-help" />
+                        <div className="absolute bottom-full mb-2 -right-1/2 translate-x-1/2 w-60 p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-opacity z-10">
+                          Indiquez des technologies, des styles de design ou des fonctionnalités spécifiques que vous aimeriez voir.
+                        </div>
+                      </div>
+                      <button onClick={handleSurprisePreferences} className="text-gray-400 hover:text-purple-600">
+                        <Wand2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {preferencesTags.map(tag => (
+                    <button key={tag} onClick={() => setPreferences(prev => prev ? `${prev}, ${tag}` : tag)} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full hover:bg-purple-100 hover:text-purple-700 transition-colors">
+                      + {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tonalité */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tonalité du projet</label>
+                <div className="flex rounded-lg p-1 bg-gray-200">
+                  <button onClick={() => setTone('professional')} className={`w-1/2 p-2 rounded-md text-sm font-medium transition-colors ${tone === 'professional' ? 'bg-white shadow text-purple-700' : 'text-gray-600 hover:bg-gray-300'}`}>Sérieux / Pro</button>
+                  <button onClick={() => setTone('creative')} className={`w-1/2 p-2 rounded-md text-sm font-medium transition-colors ${tone === 'creative' ? 'bg-white shadow text-purple-700' : 'text-gray-600 hover:bg-gray-300'}`}>Créatif / Ludique</button>
+                </div>
               </div>
             </motion.div>
           )}
