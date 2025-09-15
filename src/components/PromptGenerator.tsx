@@ -35,9 +35,34 @@ const PromptGenerator: React.FC<PromptGeneratorProps> = ({ specifications, onBac
   }, [selectedPlatform]);
 
   const handleCopyToClipboard = () => {
-    navigator.clipboard.writeText(generatedPrompt);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    // Fallback method for sandboxed environments where Clipboard API is blocked.
+    const textArea = document.createElement("textarea");
+    textArea.value = generatedPrompt;
+    
+    // Make it invisible and move it out of the viewport
+    textArea.style.position = 'fixed';
+    textArea.style.top = '-9999px';
+    textArea.style.left = '-9999px';
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      } else {
+        console.error('Fallback copy command failed.');
+        alert('La copie automatique a échoué. Veuillez sélectionner le texte et le copier manuellement.');
+      }
+    } catch (err) {
+      console.error('Error during fallback copy:', err);
+      alert('La copie automatique a échoué. Veuillez sélectionner le texte et le copier manuellement.');
+    }
+    
+    document.body.removeChild(textArea);
   };
 
   return (
