@@ -10,7 +10,8 @@ const Header: React.FC<HeaderProps> = ({ currentStep, onOpenSettings }) => {
   const steps = [
     'Génération d\'idée',
     'Personnalisation',
-    'Cahier des charges'
+    'Cahier des charges',
+    'Prompt Vibe Coding'
   ];
 
   return (
@@ -22,8 +23,8 @@ const Header: React.FC<HeaderProps> = ({ currentStep, onOpenSettings }) => {
               <Lightbulb className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Générateur d'Idées d'Apps</h1>
-              <p className="text-blue-100">Créez votre prochaine application web innovante</p>
+              <h1 className="text-2xl md:text-3xl font-bold">Générateur de Projets</h1>
+              <p className="text-blue-100">Créez votre prochain projet numérique innovant</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">

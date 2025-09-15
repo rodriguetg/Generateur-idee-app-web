@@ -1,4 +1,4 @@
-export interface AppIdea {
+export interface ProjectIdea {
   id: string;
   title: string;
   description: string;
@@ -14,7 +14,7 @@ export interface AppIdea {
 
 export interface Specifications {
   id: string;
-  appIdea: AppIdea;
+  projectIdea: ProjectIdea;
   projectOverview: string;
   objectives: string[];
   scope: {
@@ -99,3 +99,5 @@ export interface ApiConfig {
   apiKey: string;
   model?: string;
 }
+
+export type VibePlatform = 'dualite' | 'lovable' | 'bolt';

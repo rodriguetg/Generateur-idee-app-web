@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, TrendingUp, Target, Zap, RefreshCw, AlertCircle } from 'lucide-react';
-import { AppIdea, ApiConfig } from '../types';
+import { ProjectIdea, ApiConfig } from '../types';
 import { aiService } from '../services/aiService';
 import { parseJsonFromResponse } from '../utils/jsonParser';
 
 interface AIInsightsProps {
-  idea: AppIdea;
+  idea: ProjectIdea;
   apiConfig: ApiConfig;
   onInsightsReady?: (insights: any) => void;
 }
@@ -32,7 +32,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
     setError(null);
     
     const analysisPrompt = `
-    Analyse cette idée d'application web et fournis des insights.
+    Analyse cette idée de projet et fournis des insights.
     Idée: "${idea.title}: ${idea.description}"
     Catégorie: "${idea.category}"
     Réponds au format JSON strict, sans texte d'introduction ni conclusion, uniquement l'objet JSON:
@@ -47,7 +47,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
     `;
 
     const personasPrompt = `
-    Crée 3 personas utilisateurs détaillés pour cette application.
+    Crée 3 personas utilisateurs détaillés pour ce projet.
     "${idea.title}: ${idea.description}"
     Réponds au format JSON strict, sans texte d'introduction ni conclusion, uniquement l'objet JSON:
     {

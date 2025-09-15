@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Plus, X } from 'lucide-react';
-import { AppIdea } from '../types';
+import { ProjectIdea } from '../types';
 
 interface IdeaCustomizerProps {
-  idea: AppIdea;
-  onCustomizationComplete: (customizedIdea: AppIdea) => void;
+  idea: ProjectIdea;
+  onCustomizationComplete: (customizedIdea: ProjectIdea) => void;
   onBack: () => void;
 }
 
 const IdeaCustomizer: React.FC<IdeaCustomizerProps> = ({ idea, onCustomizationComplete, onBack }) => {
-  const [customizedIdea, setCustomizedIdea] = useState<AppIdea>(idea);
+  const [customizedIdea, setCustomizedIdea] = useState<ProjectIdea>(idea);
   const [newFeature, setNewFeature] = useState('');
   const [newMonetization, setNewMonetization] = useState('');
   const [newTech, setNewTech] = useState('');
 
-  const handleInputChange = (field: keyof AppIdea, value: any) => {
+  const handleInputChange = (field: keyof ProjectIdea, value: any) => {
     setCustomizedIdea(prev => ({ ...prev, [field]: value }));
   };
 
@@ -84,7 +84,7 @@ const IdeaCustomizer: React.FC<IdeaCustomizerProps> = ({ idea, onCustomizationCo
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Titre de l'application
+                Titre du projet
               </label>
               <input
                 type="text"

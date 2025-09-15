@@ -14,17 +14,22 @@ import {
   Code,
   Database,
   Server,
-  Cloud
+  Cloud,
+  Loader2,
+  ArrowRight
 } from 'lucide-react';
 import { Specifications } from '../types';
+import { generatePdfFromSpecs } from '../utils/pdfGenerator';
 
 interface SpecificationViewerProps {
   specifications: Specifications;
   onBack: () => void;
+  onNext: () => void;
 }
 
-const SpecificationViewer: React.FC<SpecificationViewerProps> = ({ specifications, onBack }) => {
+const SpecificationViewer: React.FC<SpecificationViewerProps> = ({ specifications, onBack, onNext }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const tabs = [
     { id: 'overview', label: 'Vue d\'ensemble', icon: FileText },
@@ -55,15 +60,22 @@ const SpecificationViewer: React.FC<SpecificationViewerProps> = ({ specification
     }
   };
 
-  const downloadPDF = () => {
-    // Simulation du téléchargement PDF
-    alert('Fonctionnalité de téléchargement PDF à implémenter avec une bibliothèque comme jsPDF');
+  const downloadPDF = async () => {
+    setIsDownloading(true);
+    try {
+      await generatePdfFromSpecs(specifications);
+    } catch (error) {
+      console.error("Erreur lors de la génération du PDF:", error);
+      alert("Une erreur est survenue lors de la génération du PDF.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const renderOverview = () => (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border">
-        <h3 className="text-xl font-bold text-gray-800 mb-3">{specifications.appIdea.title}</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-3">{specifications.projectIdea.title}</h3>
         <p className="text-gray-700 leading-relaxed mb-4">{specifications.projectOverview}</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
@@ -355,21 +367,22 @@ const SpecificationViewer: React.FC<SpecificationViewerProps> = ({ specification
     >
       <div className="bg-white rounded-xl p-6 shadow-lg border">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-800">Cahier des Charges</h3>
+          <div>
+            <h3 className="text-2xl font-bold text-gray-800">Cahier des Charges</h3>
+            <p className="text-gray-500 text-sm">Explorez les détails de votre projet avant de générer le prompt final.</p>
+          </div>
           <div className="flex space-x-3">
             <button
               onClick={downloadPDF}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors inline-flex items-center space-x-2"
+              disabled={isDownloading}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors inline-flex items-center space-x-2 disabled:bg-green-400 disabled:cursor-not-allowed"
             >
-              <Download className="h-4 w-4" />
-              <span>Télécharger PDF</span>
-            </button>
-            <button
-              onClick={onBack}
-              className="text-gray-600 hover:text-gray-700 font-medium inline-flex items-center space-x-1"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Retour</span>
+              {isDownloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              <span>{isDownloading ? 'Génération...' : 'PDF'}</span>
             </button>
           </div>
         </div>
@@ -408,6 +421,24 @@ const SpecificationViewer: React.FC<SpecificationViewerProps> = ({ specification
         >
           {renderTabContent()}
         </motion.div>
+
+        <div className="flex justify-between items-center pt-6 border-t mt-6">
+          <button
+            onClick={onBack}
+            className="text-gray-600 hover:text-gray-700 font-medium inline-flex items-center space-x-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Retour</span>
+          </button>
+
+          <button
+            onClick={onNext}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 transition-all duration-200 inline-flex items-center space-x-2"
+          >
+            <span>Générer le Prompt</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </motion.div>
   );

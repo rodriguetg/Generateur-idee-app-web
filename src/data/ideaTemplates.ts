@@ -1,6 +1,6 @@
-import { AppIdea } from '../types';
+import { ProjectIdea } from '../types';
 
-export const ideaTemplates: Partial<AppIdea>[] = [
+export const ideaTemplates: Partial<ProjectIdea>[] = [
   // E-commerce
   {
     category: 'ecommerce',

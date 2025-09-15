@@ -1,13 +1,13 @@
-import { AppIdea, Specifications, FunctionalRequirement, NonFunctionalRequirement, UserStory, TechnicalArchitecture, Phase, BudgetEstimate, Risk, AcceptanceCriteria } from '../types';
+import { ProjectIdea, Specifications, FunctionalRequirement, NonFunctionalRequirement, UserStory, TechnicalArchitecture, Phase, BudgetEstimate, Risk, AcceptanceCriteria } from '../types';
 import { faker } from '@faker-js/faker';
 
-export const generateSpecifications = (appIdea: AppIdea): Specifications => {
-  const functionalRequirements: FunctionalRequirement[] = appIdea.mainFeatures.map((feature, index) => ({
+export const generateSpecifications = (projectIdea: ProjectIdea): Specifications => {
+  const functionalRequirements: FunctionalRequirement[] = projectIdea.mainFeatures.map((feature, index) => ({
     id: `FR-${(index + 1).toString().padStart(3, '0')}`,
     title: feature,
     description: `Implémentation complète de la fonctionnalité ${feature.toLowerCase()}`,
     priority: index < 3 ? 'Haute' : index < 6 ? 'Moyenne' : 'Basse',
-    complexity: appIdea.difficulty === 'Facile' ? 'Simple' : appIdea.difficulty === 'Moyen' ? 'Modérée' : 'Complexe'
+    complexity: projectIdea.difficulty === 'Facile' ? 'Simple' : projectIdea.difficulty === 'Moyen' ? 'Modérée' : 'Complexe'
   }));
 
   const nonFunctionalRequirements: NonFunctionalRequirement[] = [
@@ -33,7 +33,7 @@ export const generateSpecifications = (appIdea: AppIdea): Specifications => {
       id: 'NFR-004',
       category: 'Scalabilité',
       requirement: 'Nombre d\'utilisateurs simultanés',
-      target: appIdea.difficulty === 'Facile' ? '1,000' : appIdea.difficulty === 'Moyen' ? '10,000' : '100,000'
+      target: projectIdea.difficulty === 'Facile' ? '1,000' : projectIdea.difficulty === 'Moyen' ? '10,000' : '100,000'
     },
     {
       id: 'NFR-005',
@@ -47,7 +47,7 @@ export const generateSpecifications = (appIdea: AppIdea): Specifications => {
     {
       id: 'US-001',
       persona: 'Utilisateur final',
-      story: `En tant qu'utilisateur, je veux pouvoir m'inscrire facilement pour accéder aux fonctionnalités de ${appIdea.title}`,
+      story: `En tant qu'utilisateur, je veux pouvoir m'inscrire facilement pour accéder aux fonctionnalités de ${projectIdea.title}`,
       acceptance: ['Formulaire d\'inscription simple', 'Validation email', 'Redirection vers dashboard'],
       priority: 'Haute'
     },
@@ -68,19 +68,19 @@ export const generateSpecifications = (appIdea: AppIdea): Specifications => {
   ];
 
   const technicalArchitecture: TechnicalArchitecture = {
-    frontend: appIdea.techStack.filter(tech => 
+    frontend: projectIdea.techStack.filter(tech => 
       ['React', 'Vue', 'Angular', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Tailwind'].includes(tech)
     ),
-    backend: appIdea.techStack.filter(tech => 
+    backend: projectIdea.techStack.filter(tech => 
       ['Node.js', 'Express', 'Python', 'Django', 'Flask', 'Java', 'Spring'].includes(tech)
     ),
-    database: appIdea.techStack.filter(tech => 
+    database: projectIdea.techStack.filter(tech => 
       ['MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firebase'].includes(tech)
     ),
-    hosting: appIdea.techStack.filter(tech => 
+    hosting: projectIdea.techStack.filter(tech => 
       ['AWS', 'Azure', 'GCP', 'Vercel', 'Netlify', 'Heroku'].includes(tech)
     ),
-    thirdParty: appIdea.techStack.filter(tech => 
+    thirdParty: projectIdea.techStack.filter(tech => 
       ['Stripe', 'PayPal', 'Google Maps', 'SendGrid', 'Twilio'].includes(tech)
     )
   };
@@ -94,25 +94,25 @@ export const generateSpecifications = (appIdea: AppIdea): Specifications => {
     },
     {
       name: 'Phase 2: Développement MVP',
-      duration: getEstimatedDuration(appIdea.estimatedTime, 0.6),
+      duration: getEstimatedDuration(projectIdea.estimatedTime, 0.6),
       deliverables: ['Fonctionnalités core', 'Interface utilisateur', 'API Backend', 'Base de données'],
       resources: ['Développeur Frontend', 'Développeur Backend', 'DevOps']
     },
     {
       name: 'Phase 3: Tests et Optimisation',
-      duration: getEstimatedDuration(appIdea.estimatedTime, 0.2),
+      duration: getEstimatedDuration(projectIdea.estimatedTime, 0.2),
       deliverables: ['Tests unitaires', 'Tests d\'intégration', 'Optimisations performance', 'Corrections bugs'],
       resources: ['QA Tester', 'Développeurs']
     },
     {
       name: 'Phase 4: Déploiement et Lancement',
-      duration: getEstimatedDuration(appIdea.estimatedTime, 0.2),
+      duration: getEstimatedDuration(projectIdea.estimatedTime, 0.2),
       deliverables: ['Déploiement production', 'Documentation', 'Formation utilisateurs', 'Support'],
       resources: ['DevOps', 'Support technique']
     }
   ];
 
-  const baseCost = getDevelopmentCost(appIdea.difficulty);
+  const baseCost = getDevelopmentCost(projectIdea.difficulty);
   const budget: BudgetEstimate = {
     development: baseCost,
     design: Math.round(baseCost * 0.25),
@@ -127,14 +127,14 @@ export const generateSpecifications = (appIdea: AppIdea): Specifications => {
     {
       id: 'RISK-001',
       description: 'Dépassement du budget de développement',
-      probability: appIdea.difficulty === 'Difficile' ? 'Élevée' : 'Moyenne',
+      probability: projectIdea.difficulty === 'Difficile' ? 'Élevée' : 'Moyenne',
       impact: 'Élevé',
       mitigation: 'Suivi rigoureux du budget, revues régulières des coûts'
     },
     {
       id: 'RISK-002',
       description: 'Retard dans les délais de livraison',
-      probability: appIdea.difficulty === 'Facile' ? 'Faible' : 'Moyenne',
+      probability: projectIdea.difficulty === 'Facile' ? 'Faible' : 'Moyenne',
       impact: 'Moyen',
       mitigation: 'Planning détaillé, méthodologie Agile, équipe expérimentée'
     },
@@ -184,10 +184,10 @@ export const generateSpecifications = (appIdea: AppIdea): Specifications => {
 
   return {
     id: faker.string.uuid(),
-    appIdea,
-    projectOverview: `${appIdea.title} est une application web innovante ciblant ${appIdea.targetAudience.toLowerCase()}. ${appIdea.description} Cette solution vise à transformer l'expérience utilisateur dans le domaine ${appIdea.category} en proposant des fonctionnalités avancées et une interface intuitive.`,
+    projectIdea,
+    projectOverview: `${projectIdea.title} est une application web innovante ciblant ${projectIdea.targetAudience.toLowerCase()}. ${projectIdea.description} Cette solution vise à transformer l'expérience utilisateur dans le domaine ${projectIdea.category} en proposant des fonctionnalités avancées et une interface intuitive.`,
     objectives: [
-      `Développer une application web moderne et responsive pour ${appIdea.targetAudience.toLowerCase()}`,
+      `Développer une application web moderne et responsive pour ${projectIdea.targetAudience.toLowerCase()}`,
       'Implémenter toutes les fonctionnalités définies avec une expérience utilisateur optimale',
       'Assurer la scalabilité et la sécurité de la solution',
       'Livrer un produit conforme aux standards de qualité et aux délais convenus',

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shuffle, ArrowRight, Star, Clock, TrendingUp } from 'lucide-react';
-import { AppIdea } from '../types';
+import { ProjectIdea } from '../types';
 import { ideaTemplates } from '../data/ideaTemplates';
 import { faker } from '@faker-js/faker';
 
 interface IdeaGeneratorProps {
   selectedCategory: string;
-  onIdeaGenerated: (idea: AppIdea) => void;
+  onIdeaGenerated: (idea: ProjectIdea) => void;
 }
 
 const IdeaGenerator: React.FC<IdeaGeneratorProps> = ({ selectedCategory, onIdeaGenerated }) => {
-  const [currentIdea, setCurrentIdea] = useState<AppIdea | null>(null);
+  const [currentIdea, setCurrentIdea] = useState<ProjectIdea | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateIdea = () => {
@@ -29,10 +29,10 @@ const IdeaGenerator: React.FC<IdeaGeneratorProps> = ({ selectedCategory, onIdeaG
         selectedTemplate = ideaTemplates[Math.floor(Math.random() * ideaTemplates.length)];
       }
 
-      const idea: AppIdea = {
+      const idea: ProjectIdea = {
         id: faker.string.uuid(),
-        title: selectedTemplate.title || 'Application Innovante',
-        description: selectedTemplate.description || 'Une application révolutionnaire qui transforme l\'expérience utilisateur.',
+        title: selectedTemplate.title || 'Projet Innovant',
+        description: selectedTemplate.description || 'Un projet révolutionnaire qui transforme l\'expérience utilisateur.',
         category: selectedTemplate.category || selectedCategory,
         targetAudience: selectedTemplate.targetAudience || 'Utilisateurs tech-savvy, 18-45 ans',
         mainFeatures: selectedTemplate.mainFeatures || ['Interface intuitive', 'Notifications push', 'Mode hors-ligne', 'Analytics intégrées'],

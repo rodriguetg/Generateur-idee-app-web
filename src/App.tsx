@@ -5,17 +5,18 @@ import CategorySelector from './components/CategorySelector';
 import EnhancedIdeaGenerator from './components/EnhancedIdeaGenerator';
 import IdeaCustomizer from './components/IdeaCustomizer';
 import SpecificationViewer from './components/SpecificationViewer';
+import PromptGenerator from './components/PromptGenerator';
 import AIAssistant from './components/AIAssistant';
 import SettingsModal from './components/SettingsModal';
-import { AppIdea, Specifications, ApiConfig } from './types';
+import { ProjectIdea, Specifications, ApiConfig } from './types';
 import { generateSpecifications } from './utils/specificationGenerator';
 
-type Step = 'category' | 'generate' | 'customize' | 'specifications';
+type Step = 'category' | 'generate' | 'customize' | 'specifications' | 'prompt';
 
 function App() {
   const [currentStep, setCurrentStep] = useState<Step>('category');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [generatedIdea, setGeneratedIdea] = useState<AppIdea | null>(null);
+  const [generatedIdea, setGeneratedIdea] = useState<ProjectIdea | null>(null);
   const [specifications, setSpecifications] = useState<Specifications | null>(null);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -40,15 +41,19 @@ function App() {
     setCurrentStep('generate');
   };
 
-  const handleIdeaGenerated = (idea: AppIdea) => {
+  const handleIdeaGenerated = (idea: ProjectIdea) => {
     setGeneratedIdea(idea);
     setCurrentStep('customize');
   };
 
-  const handleCustomizationComplete = (customizedIdea: AppIdea) => {
+  const handleCustomizationComplete = (customizedIdea: ProjectIdea) => {
     const specs = generateSpecifications(customizedIdea);
     setSpecifications(specs);
     setCurrentStep('specifications');
+  };
+  
+  const handleSpecsComplete = () => {
+    setCurrentStep('prompt');
   };
 
   const handleBackToCategory = () => {
@@ -68,11 +73,16 @@ function App() {
     setSpecifications(null);
   };
 
+  const handleBackToSpecs = () => {
+    setCurrentStep('specifications');
+  };
+
   const getStepNumber = () => {
     switch (currentStep) {
       case 'category': case 'generate': return 0;
       case 'customize': return 1;
       case 'specifications': return 2;
+      case 'prompt': return 3;
       default: return 0;
     }
   };
@@ -99,10 +109,10 @@ function App() {
             >
               <div className="text-center">
                 <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                  Choisissez une catégorie d'application
+                  Choisissez une catégorie de projet
                 </h2>
                 <p className="text-gray-600 max-w-2xl mx-auto">
-                  Sélectionnez le domaine qui vous intéresse pour générer des idées d'applications web innovantes avec l'IA
+                  Sélectionnez le domaine qui vous intéresse pour générer des idées de projets numériques innovants avec l'IA
                 </p>
               </div>
               <CategorySelector
@@ -122,10 +132,10 @@ function App() {
             >
               <div className="text-center">
                 <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                  Générez votre idée d'application
+                  Générez votre idée de projet
                 </h2>
                 <p className="text-gray-600 max-w-2xl mx-auto">
-                  Découvrez des concepts innovants générés par IA pour votre prochaine application web
+                  Découvrez des concepts innovants générés par IA pour votre prochain projet numérique
                 </p>
                 <button
                   onClick={handleBackToCategory}
@@ -175,6 +185,21 @@ function App() {
               <SpecificationViewer
                 specifications={specifications}
                 onBack={handleBackToCustomize}
+                onNext={handleSpecsComplete}
+              />
+            </motion.div>
+          )}
+
+          {currentStep === 'prompt' && specifications && (
+            <motion.div
+              key="prompt"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <PromptGenerator
+                specifications={specifications}
+                onBack={handleBackToSpecs}
               />
             </motion.div>
           )}

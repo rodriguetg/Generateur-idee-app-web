@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shuffle, ArrowRight, Star, Clock, TrendingUp, Brain, Sparkles, AlertCircle } from 'lucide-react';
-import { AppIdea, ApiConfig } from '../types';
+import { ProjectIdea, ApiConfig } from '../types';
 import { ideaTemplates } from '../data/ideaTemplates';
 import { aiService } from '../services/aiService';
 import { faker } from '@faker-js/faker';
@@ -10,12 +10,12 @@ import { parseJsonFromResponse } from '../utils/jsonParser';
 
 interface EnhancedIdeaGeneratorProps {
   selectedCategory: string;
-  onIdeaGenerated: (idea: AppIdea) => void;
+  onIdeaGenerated: (idea: ProjectIdea) => void;
   apiConfig: ApiConfig;
 }
 
 const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedCategory, onIdeaGenerated, apiConfig }) => {
-  const [currentIdea, setCurrentIdea] = useState<AppIdea | null>(null);
+  const [currentIdea, setCurrentIdea] = useState<ProjectIdea | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [useAI, setUseAI] = useState(true);
   const [preferences, setPreferences] = useState('');
@@ -29,7 +29,7 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
     setApiError(null);
     
     const prompt = `
-    Génère une idée d'application web innovante pour la catégorie "${selectedCategory}".
+    Génère une idée de projet numérique innovant pour la catégorie "${selectedCategory}".
     
     Contraintes:
     - Public cible: ${targetAudience || 'Utilisateurs génériques'}
@@ -57,7 +57,7 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
         const aiIdea = parseJsonFromResponse<any>(response.content);
         
         if (aiIdea) {
-          const idea: AppIdea = {
+          const idea: ProjectIdea = {
             id: faker.string.uuid(),
             title: aiIdea.title || 'Titre non généré',
             description: aiIdea.description || 'Description non générée',
@@ -100,10 +100,10 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
         selectedTemplate = ideaTemplates[Math.floor(Math.random() * ideaTemplates.length)];
       }
 
-      const idea: AppIdea = {
+      const idea: ProjectIdea = {
         id: faker.string.uuid(),
-        title: selectedTemplate.title || 'Application Innovante',
-        description: selectedTemplate.description || 'Une application révolutionnaire qui transforme l\'expérience utilisateur.',
+        title: selectedTemplate.title || 'Projet Innovant',
+        description: selectedTemplate.description || 'Un projet révolutionnaire qui transforme l\'expérience utilisateur.',
         category: selectedTemplate.category || selectedCategory,
         targetAudience: targetAudience || selectedTemplate.targetAudience || 'Utilisateurs tech-savvy, 18-45 ans',
         mainFeatures: selectedTemplate.mainFeatures || ['Interface intuitive', 'Notifications push', 'Mode hors-ligne', 'Analytics intégrées'],
