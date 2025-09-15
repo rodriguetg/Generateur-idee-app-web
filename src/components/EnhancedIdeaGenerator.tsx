@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shuffle, ArrowRight, Star, Clock, TrendingUp, Brain, Sparkles } from 'lucide-react';
+import { Shuffle, ArrowRight, Star, Clock, TrendingUp, Brain, Sparkles, AlertCircle } from 'lucide-react';
 import { AppIdea, ApiConfig } from '../types';
 import { ideaTemplates } from '../data/ideaTemplates';
 import { aiService } from '../services/aiService';
@@ -21,10 +21,12 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
   const [preferences, setPreferences] = useState('');
   const [targetAudience, setTargetAudience] = useState('');
   const [complexity, setComplexity] = useState('Moyen');
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const generateAIIdea = async () => {
     setIsGenerating(true);
     setCurrentIdea(null);
+    setApiError(null);
     
     const prompt = `
     Génère une idée d'application web innovante pour la catégorie "${selectedCategory}".
@@ -70,15 +72,14 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
           };
           setCurrentIdea(idea);
         } else {
-          console.error("Échec de l'analyse de la réponse JSON de l'IA pour l'idée.");
-          generateClassicIdea();
+          setApiError("L'IA a retourné une réponse mal formée. Veuillez réessayer.");
         }
       } else {
-        generateClassicIdea();
+        setApiError(response.error || "Une erreur inconnue est survenue.");
       }
     } catch (error) {
-      console.error('Erreur génération IA:', error);
-      generateClassicIdea();
+      console.error('Erreur inattendue dans EnhancedIdeaGenerator:', error);
+      setApiError("Une erreur inattendue est survenue dans le composant.");
     } finally {
       setIsGenerating(false);
     }
@@ -87,6 +88,7 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
   const generateClassicIdea = () => {
     setIsGenerating(true);
     setCurrentIdea(null);
+    setApiError(null);
     
     setTimeout(() => {
       const categoryTemplates = ideaTemplates.filter(template => template.category === selectedCategory);
@@ -118,6 +120,7 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
   };
 
   const generateIdea = () => {
+    setApiError(null);
     if (useAI) {
       generateAIIdea();
     } else {
@@ -239,6 +242,26 @@ const EnhancedIdeaGenerator: React.FC<EnhancedIdeaGeneratorProps> = ({ selectedC
           </span>
         </button>
       </div>
+
+      {/* Affichage de l'erreur API */}
+      {apiError && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg"
+          role="alert"
+        >
+          <div className="flex">
+            <div className="py-1">
+              <AlertCircle className="h-5 w-5 text-red-500 mr-3" />
+            </div>
+            <div>
+              <p className="font-bold">Erreur de l'IA</p>
+              <p className="text-sm">{apiError} Veuillez vérifier votre clé dans les paramètres (icône d'engrenage en haut à droite).</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Animation de chargement */}
       {isGenerating && (

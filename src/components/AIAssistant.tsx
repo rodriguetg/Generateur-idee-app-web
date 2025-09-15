@@ -43,13 +43,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onToggle, apiConfig, 
     "Suggestions de fonctionnalités",
   ];
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+  const sendMessage = async (messageContent: string) => {
+    if (!messageContent.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: inputValue,
+      content: messageContent,
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -62,16 +62,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onToggle, apiConfig, 
     - Idée: ${context?.idea?.title || 'Non définie'}
     - Description: ${context?.idea?.description || 'Non définie'}
 
-    Question de l'utilisateur: "${inputValue}"
+    Question de l'utilisateur: "${messageContent}"
 
     Réponds de manière concise et utile en tant qu'expert en développement de produits. Utilise le format Markdown.
     `;
 
     const response = await aiService.generate({ prompt, config: apiConfig });
 
-    let aiResponseContent = "Désolé, je n'ai pas pu générer de réponse. Veuillez vérifier votre configuration API ou réessayer.";
+    let aiResponseContent: string;
     if (response.success && response.content) {
       aiResponseContent = response.content;
+    } else {
+      aiResponseContent = `**Erreur :** ${response.error || "Je n'ai pas pu générer de réponse."} Veuillez vérifier votre configuration API dans les paramètres.`;
     }
     
     const aiMessage: Message = {
@@ -84,36 +86,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onToggle, apiConfig, 
     setIsTyping(false);
   };
 
+  const handleSendMessage = () => {
+    sendMessage(inputValue);
+  };
+
   const handleQuickSuggestion = (suggestion: string) => {
-    setInputValue(suggestion);
-    // Automatically send message on quick suggestion click
-    const userMessage: Message = { id: Date.now().toString(), type: 'user', content: suggestion };
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
-    setIsTyping(true);
-    
-    // Fake a small delay then send
-    setTimeout(() => {
-        const prompt = `
-        Contexte actuel:
-        - Étape: ${context?.step || 'Inconnue'}
-        - Idée: ${context?.idea?.title || 'Non définie'}
-        - Description: ${context?.idea?.description || 'Non définie'}
-
-        Question de l'utilisateur: "${suggestion}"
-
-        Réponds de manière concise et utile en tant qu'expert en développement de produits. Utilise le format Markdown.
-        `;
-        aiService.generate({ prompt, config: apiConfig }).then(response => {
-            let aiResponseContent = "Désolé, je n'ai pas pu générer de réponse. Veuillez vérifier votre configuration API ou réessayer.";
-            if (response.success && response.content) {
-                aiResponseContent = response.content;
-            }
-            const aiMessage: Message = { id: (Date.now() + 1).toString(), type: 'ai', content: aiResponseContent };
-            setMessages(prev => [...prev, aiMessage]);
-            setIsTyping(false);
-        });
-    }, 500);
+    sendMessage(suggestion);
   };
 
   if (!isOpen) {
@@ -216,10 +194,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ isOpen, onToggle, apiConfig, 
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             placeholder="Posez votre question..."
             className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+            disabled={isTyping}
           />
           <button
             onClick={handleSendMessage}
-            disabled={!inputValue.trim()}
+            disabled={!inputValue.trim() || isTyping}
             className="bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Send className="h-4 w-4" />

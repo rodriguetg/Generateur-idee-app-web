@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, TrendingUp, Target, Zap, RefreshCw } from 'lucide-react';
+import { Brain, TrendingUp, Target, Zap, RefreshCw, AlertCircle } from 'lucide-react';
 import { AppIdea, ApiConfig } from '../types';
 import { aiService } from '../services/aiService';
 import { parseJsonFromResponse } from '../utils/jsonParser';
@@ -15,10 +15,13 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
   const [insights, setInsights] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [personas, setPersonas] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (idea) {
+    if (idea && apiConfig.apiKey) {
       generateInsights();
+    } else if (idea && !apiConfig.apiKey) {
+        setError("Veuillez configurer votre clé API pour générer les analyses IA.");
     }
   }, [idea, apiConfig]);
 
@@ -26,6 +29,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
     setIsLoading(true);
     setInsights(null);
     setPersonas(null);
+    setError(null);
     
     const analysisPrompt = `
     Analyse cette idée d'application web et fournis des insights.
@@ -73,8 +77,12 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
           setInsights(content);
           onInsightsReady?.(content);
         } else {
-          console.error("Échec de l'analyse de la réponse JSON de l'IA pour l'analyse.");
+          setError("L'IA a retourné une analyse mal formée.");
         }
+      } else if (!analysisResponse.success) {
+        setError(analysisResponse.error || "Erreur lors de la génération de l'analyse.");
+        setIsLoading(false);
+        return;
       }
 
       if (personasResponse.success && personasResponse.content) {
@@ -82,11 +90,14 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
         if (personasContent) {
           setPersonas(personasContent);
         } else {
-          console.error("Échec de l'analyse de la réponse JSON de l'IA pour les personas.");
+           console.error("L'IA a retourné des personas mal formés.");
         }
+      } else if (!personasResponse.success) {
+        setError(personasResponse.error || "Erreur lors de la génération des personas.");
       }
-    } catch (error) {
-      console.error('Erreur génération insights:', error);
+    } catch (err: any) {
+      console.error('Erreur génération insights:', err);
+      setError(err.message || "Une erreur inattendue est survenue.");
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +108,25 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
     if (score >= 60) return 'text-yellow-600 bg-yellow-100';
     return 'text-red-600 bg-red-100';
   };
+
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg mt-4"
+        role="alert"
+      >
+        <div className="flex">
+          <div className="py-1"><AlertCircle className="h-5 w-5 text-red-500 mr-3" /></div>
+          <div>
+            <p className="font-bold">Erreur d'analyse IA</p>
+            <p className="text-sm">{error} Veuillez vérifier votre clé API dans les paramètres.</p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -139,8 +169,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
             onClick={generateInsights}
             className="text-purple-600 hover:text-purple-700 p-1"
             title="Regenerer l'analyse"
+            disabled={isLoading}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
         
@@ -153,19 +184,19 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600 mb-1">
-              {insights.competitors?.length || 3}
+              {insights.competitors?.length || 0}
             </div>
             <div className="text-sm text-gray-600">Concurrents identifiés</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600 mb-1">
-              {insights.opportunities?.length || 2}
+              {insights.opportunities?.length || 0}
             </div>
             <div className="text-sm text-gray-600">Opportunités</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-600 mb-1">
-              {insights.recommendations?.length || 3}
+              {insights.recommendations?.length || 0}
             </div>
             <div className="text-sm text-gray-600">Recommandations</div>
           </div>
@@ -234,11 +265,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({ idea, apiConfig, onInsightsRead
       </div>
 
       {/* Personas utilisateurs */}
-      {personas && (
+      {personas && personas.personas && (
         <div className="bg-white p-6 rounded-lg border">
           <h5 className="font-semibold text-gray-800 mb-4">Personas utilisateurs (IA)</h5>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {personas.personas?.map((persona: any, index: number) => (
+            {personas.personas.map((persona: any, index: number) => (
               <div key={index} className="bg-gray-50 p-4 rounded-lg">
                 <h6 className="font-medium text-gray-800 mb-2">{persona.name}</h6>
                 <div className="text-sm text-gray-600 space-y-1">

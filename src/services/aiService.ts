@@ -1,46 +1,23 @@
 import { ApiConfig } from '../types';
 
-interface AIRequest {
-  prompt: string;
-  config: ApiConfig;
-  isJson?: boolean;
-}
-
 interface AIResponse {
   success: boolean;
   content?: string;
   error?: string;
+  errorType?: 'auth' | 'network' | 'generic';
 }
 
 class AIService {
-  private getMockResponse(prompt: string): AIResponse {
-    console.warn("Utilisation du mode démo (clé API non configurée ou invalide).");
-    let mockContent = {
-      title: "Idée d'App Démo (IA)",
-      description: "Ceci est une description générée par le mode démo car la clé API n'est pas configurée. Veuillez configurer votre clé API dans les paramètres pour obtenir des résultats réels.",
-      targetAudience: "Développeurs en test",
-      mainFeatures: ["Fonctionnalité Démo 1", "Fonctionnalité Démo 2"],
-      monetization: ["Modèle Démo"],
-      techStack: ["React", "TypeScript", "Tailwind CSS"],
-      difficulty: "Moyen",
-      estimatedTime: "1 mois",
-      marketPotential: 75,
-      marketAnalysis: "Analyse de marché simulée.",
-      competitors: ["Concurrent Démo A", "Concurrent Démo B"],
-      opportunities: ["Opportunité Démo"],
-      challenges: ["Défi Démo"],
-      recommendations: ["Recommandation Démo"],
-      score: 75
-    };
-    return { success: true, content: JSON.stringify(mockContent) };
-  }
-
   public async generate(request: AIRequest): Promise<AIResponse> {
     const { prompt, config, isJson = false } = request;
     const { provider, apiKey, model } = config;
 
     if (!apiKey) {
-      return this.getMockResponse(prompt);
+      return { 
+        success: false, 
+        error: "Aucune clé API n'est configurée.",
+        errorType: 'auth' 
+      };
     }
 
     let endpoint = '';
@@ -73,7 +50,6 @@ class AIService {
 
       case 'gemini':
         endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-pro'}:generateContent?key=${apiKey}`;
-        // Gemini has a different body structure
         body = { contents: [{ parts: [{ text: prompt }] }] };
         if (isJson) {
            body.generationConfig = { response_mime_type: "application/json" };
@@ -81,7 +57,7 @@ class AIService {
         break;
 
       default:
-        return { success: false, error: 'Fournisseur IA non supporté' };
+        return { success: false, error: 'Fournisseur IA non supporté', errorType: 'generic' };
     }
 
     try {
@@ -92,9 +68,22 @@ class AIService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Erreur API:', errorData);
-        throw new Error(`Erreur ${response.status}: ${errorData.error?.message || 'Erreur inconnue'}`);
+        if (response.status === 401) {
+          console.warn('Erreur d\'authentification API (401). La clé API est probablement invalide ou manquante. L\'interface utilisateur doit afficher un message à l\'utilisateur.');
+          return { 
+            success: false, 
+            error: 'Votre clé API est invalide, non autorisée ou manquante.', 
+            errorType: 'auth' 
+          };
+        }
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error?.message || response.statusText || 'Réponse inattendue du serveur.';
+        console.warn(`Erreur API gérée (${response.status}):`, errorMessage);
+        return { 
+          success: false, 
+          error: `Le service IA a retourné une erreur ${response.status}. Vérifiez votre configuration et le modèle sélectionné.`, 
+          errorType: 'generic' 
+        };
       }
 
       const data = await response.json();
@@ -109,10 +98,20 @@ class AIService {
       return { success: true, content };
 
     } catch (error: any) {
-      console.error(`Erreur lors de l'appel à ${provider}:`, error);
-      return this.getMockResponse(prompt);
+      console.warn(`Erreur réseau lors de l'appel à ${provider}. Vérifiez la connexion internet.`, error);
+      return { 
+        success: false, 
+        error: 'Erreur de connexion au service IA. Veuillez vérifier votre connexion internet.', 
+        errorType: 'network' 
+      };
     }
   }
+}
+
+interface AIRequest {
+  prompt: string;
+  config: ApiConfig;
+  isJson?: boolean;
 }
 
 export const aiService = new AIService();
